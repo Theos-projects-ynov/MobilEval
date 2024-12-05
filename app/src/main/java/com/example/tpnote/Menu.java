@@ -1,7 +1,5 @@
 package com.example.tpnote;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +9,8 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Menu extends AppCompatActivity {
+
+    private static final String TAG = Menu.class.getSimpleName();
 
     Button button1, button2, button3, button4;
 
@@ -28,7 +28,6 @@ public class Menu extends AppCompatActivity {
         Log.v(TAG, "Ceci est un log verbose");
         Log.d(TAG, "Ceci est un log de débogage");
         Log.i(TAG, "Ceci est un log informatif");
-
 
         // Bouton 1
         button1.setOnClickListener(new View.OnClickListener() {
