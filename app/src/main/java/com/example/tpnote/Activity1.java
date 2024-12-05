@@ -1,10 +1,13 @@
 package com.example.tpnote;
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +41,7 @@ public class Activity1 extends AppCompatActivity {
         linearLayoutList = findViewById(R.id.linear_layout_list);
 
         Button boutonAjouter = findViewById(R.id.mon_bouton);
+
         boutonAjouter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -163,9 +167,44 @@ public class Activity1 extends AppCompatActivity {
 
         linearLayoutList.addView(nouvelleLigne);
 
-        scheduleAlarm(this, heure, titre, description);
+        String[] parts = heure.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+
+        setAlarm(calendar);
+//        scheduleAlarm(this, heure, titre, description);
 
         compteur++;
+    }
+
+    private void createNotificationChannel() {
+        CharSequence name = "AlarmChannel";
+        String description = "Canal pour les alarmes";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel("alarmChannel", name, importance);
+        channel.setDescription(description);
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (notificationManager != null) {
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void setAlarm(Calendar calendar) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        if (alarmManager != null) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            Toast.makeText(this, "Alarme réglée pour " + calendar.getTime(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void scheduleAlarm(Context context, String heure, String titre, String description) {

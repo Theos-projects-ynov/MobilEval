@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "com.example.tpnote"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.tpnote"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
