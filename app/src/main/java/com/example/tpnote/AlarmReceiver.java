@@ -24,7 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         Intent nextActivity = new Intent( context, Activity1.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context,0,nextActivity,0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,0,nextActivity, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "androidknowledge")
                 .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
@@ -37,12 +37,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         Notification notification = getNotification(context);
         notification.notify();
-//        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
-//        notificationManagerCompat.notify(123,builder.build());
-
     }
-
-
 
     private Notification getNotification(Context context) {
         Intent notificationIntent = new Intent(context, Activity1.class);
@@ -51,7 +46,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationChannel = new NotificationChannel("CHANNEL_ID", "Alarm Time....", NotificationManager.IMPORTANCE_DEFAULT);
         }
-        NotificationManager notificationManager = null;
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(notificationChannel);

@@ -12,7 +12,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="103dp"
             android:background="@color/purple_500"
             app:title="Activité 1"
             app:titleTextColor="@android:color/white" />
@@ -40,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ajouter Ligne"
-        android:layout_gravity="top|end"
+        android:layout_gravity="center|end"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="5dp" />
 
