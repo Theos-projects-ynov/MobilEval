@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:text="@string/ajouter_une_notif" />
 
         <Button
@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Bouton 2"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:layout_marginBottom="16dp" />
 
     <Button
@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Bouton 3"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:layout_marginBottom="16dp" />
 
     <Button
@@ -40,7 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Bouton 4"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:layout_marginBottom="16dp" />
 
 </LinearLayout>

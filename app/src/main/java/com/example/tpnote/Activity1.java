@@ -29,9 +29,6 @@ public class Activity1 extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         linearLayoutList = findViewById(R.id.linear_layout_list);
 
@@ -164,10 +161,5 @@ public class Activity1 extends AppCompatActivity {
 
         compteur++;
     }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+    
 }
