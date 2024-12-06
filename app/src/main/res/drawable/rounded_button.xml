@@ -11,7 +11,7 @@
     <!-- État lorsque le bouton est pressé -->
     <item android:state_pressed="true">
         <shape xmlns:android="http://schemas.android.com/apk/res/android">
-            <solid android:color="#3700B3" /> <!-- Couleur plus foncée quand pressé -->
+            <solid android:color="#6200ee" /> <!-- Couleur plus foncée quand pressé -->
             <corners android:radius="100dp" />
         </shape>
     </item>

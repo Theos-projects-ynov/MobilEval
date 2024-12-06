@@ -13,8 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:textColor="@color/white"
-        android:text="@string/ajouter_une_notif" />
+        android:text="Reminders"
+        android:textColor="@color/white" />
 
         <Button
         android:id="@+id/button2"
@@ -39,8 +39,8 @@
         style="@style/RoundedButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bouton 4"
-        android:textColor="@color/white"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:text="About"
+        android:textColor="@color/white" />
 
 </LinearLayout>
