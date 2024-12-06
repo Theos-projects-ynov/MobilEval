@@ -1,46 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp">
 
-
-    <Button
-        android:id="@+id/button1"
-        style="@style/RoundedButton"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="Reminders"
-        android:textColor="@color/white" />
+        android:layout_height="wrap_content">
 
         <Button
-        android:id="@+id/button2"
-        style="@style/RoundedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bouton 2"
+            android:id="@+id/button1"
+            style="@style/RoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reminders"
             android:textColor="@color/white"
-            android:layout_marginBottom="16dp" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/button3"
-        style="@style/RoundedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bouton 3"
-        android:textColor="@color/white"
-        android:layout_marginBottom="16dp" />
+        <Button
+            android:id="@+id/button2"
+            style="@style/RoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Bouton 2"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/button1"
+            tools:layout_editor_absoluteX="0dp" />
 
-    <Button
-        android:id="@+id/button4"
-        style="@style/RoundedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="About"
-        android:textColor="@color/white" />
+        <Button
+            android:id="@+id/button3"
+            style="@style/RoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Bouton 3"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@+id/button2"
+            tools:layout_editor_absoluteX="0dp" />
 
+        <Button
+            android:id="@+id/button4"
+            style="@style/RoundedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="About"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button3" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
