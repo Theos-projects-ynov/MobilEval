@@ -48,10 +48,10 @@
             android:id="@+id/text_view_time_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Heure"
-            android:textSize="16sp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="4dp"
+            android:text="Date et heure"
+            android:textSize="16sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -64,14 +64,15 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Aucune heure sélectionnée"
+                android:text="Aucune date et heure sélectionnée"
                 android:textSize="16sp" />
+
 
             <Button
                 android:id="@+id/button_select_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sélectionner l'heure" />
+                android:text="Sélectionner la date" />
         </LinearLayout>
 
         <!-- Bouton "Créer" -->
