@@ -1,11 +1,13 @@
 package com.example.tpnote;
 
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -29,9 +31,6 @@ public class Activity1 extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
 
         linearLayoutList = findViewById(R.id.linear_layout_list);
 
@@ -55,29 +54,40 @@ public class Activity1 extends AppCompatActivity {
 
         final EditText editTextTitle = dialogView.findViewById(R.id.edit_text_title);
         final EditText editTextDescription = dialogView.findViewById(R.id.edit_text_description);
-        final TextView textViewSelectedTime = dialogView.findViewById(R.id.text_view_selected_time);
-        Button buttonSelectTime = dialogView.findViewById(R.id.button_select_time);
+        final TextView textViewSelectedDateTime = dialogView.findViewById(R.id.text_view_selected_time);
+        Button buttonSelectDateTime = dialogView.findViewById(R.id.button_select_time);
         Button buttonCreate = dialogView.findViewById(R.id.button_create);
 
-        final String[] heureSelectionnee = {""};
+        final String[] dateTimeSelectionnee = {""};
 
-        buttonSelectTime.setOnClickListener(new View.OnClickListener() {
+        buttonSelectDateTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final Calendar c = Calendar.getInstance();
                 int heure = c.get(Calendar.HOUR_OF_DAY);
                 int minute = c.get(Calendar.MINUTE);
 
-                TimePickerDialog timePickerDialog = new TimePickerDialog(Activity1.this,
-                        new TimePickerDialog.OnTimeSetListener() {
+                // Afficher le DatePickerDialog
+                DatePickerDialog datePickerDialog = new DatePickerDialog(Activity1.this,
+                        new DatePickerDialog.OnDateSetListener() {
                             @Override
-                            public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                                String heureFormatee = String.format("%02d:%02d", selectedHour, selectedMinute);
-                                textViewSelectedTime.setText(heureFormatee);
-                                heureSelectionnee[0] = heureFormatee;
+                            public void onDateSet(DatePicker datePicker, int selectedYear, int selectedMonth, int selectedDay) {
+                                // Une fois la date sélectionnée, afficher l'horloge
+                                TimePickerDialog timePickerDialog = new TimePickerDialog(Activity1.this,
+                                        new TimePickerDialog.OnTimeSetListener() {
+                                            @Override
+                                            public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                                                // Combiner la date et l'heure
+                                                String dateTimeFormatee = String.format("%02d/%02d/%d %02d:%02d",
+                                                        selectedDay, selectedMonth + 1, selectedYear, selectedHour, selectedMinute);
+                                                textViewSelectedDateTime.setText(dateTimeFormatee);
+                                                dateTimeSelectionnee[0] = dateTimeFormatee;
+                                            }
+                                        }, heure, minute, true);
+                                timePickerDialog.show();
                             }
-                        }, heure, minute, true);
-                timePickerDialog.show();
+                        }, annee, mois, jour);
+                datePickerDialog.show();
             }
         });
 
@@ -88,7 +98,7 @@ public class Activity1 extends AppCompatActivity {
             public void onClick(View view) {
                 String titre = editTextTitle.getText().toString().trim();
                 String description = editTextDescription.getText().toString().trim();
-                String heure = heureSelectionnee[0];
+                String dateTime = dateTimeSelectionnee[0];
 
                 if (titre.isEmpty()) {
                     editTextTitle.setError("Le titre est requis");
@@ -100,12 +110,12 @@ public class Activity1 extends AppCompatActivity {
                     return;
                 }
 
-                if (heure.isEmpty()) {
-                    textViewSelectedTime.setError("L'heure est requise");
+                if (dateTime.isEmpty()) {
+                    textViewSelectedDateTime.setError("La date et l'heure sont requises");
                     return;
                 }
 
-                ajouterNouvelleLigne(titre, description, heure);
+                ajouterNouvelleLigne(titre, description, dateTime);
 
                 dialog.dismiss();
             }
@@ -165,9 +175,4 @@ public class Activity1 extends AppCompatActivity {
         compteur++;
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
 }
