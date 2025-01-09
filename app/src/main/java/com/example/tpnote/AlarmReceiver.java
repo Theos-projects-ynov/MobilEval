@@ -18,25 +18,14 @@ import androidx.core.app.NotificationManagerCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onReceive(Context context, Intent intent) {
+        String title = intent.getStringExtra("title");
+        String message = intent.getStringExtra("message");
+        int notificationId = intent.getIntExtra("notificationId", 0);
 
-        Intent nextActivity = new Intent( context, Activity1.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context,0,nextActivity, PendingIntent.FLAG_IMMUTABLE);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "androidknowledge")
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                .setContentTitle("Alarme déclenchée")
-                .setContentText("C'est l'heure !")
-                .setAutoCancel(true)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent);
-
-        Notification notification = getNotification(context);
-        notification.notify();
+        NotificationHelper notificationHelper = new NotificationHelper(context);
+        notificationHelper.sendSimpleNotification(notificationId, title, message);
     }
 
     private Notification getNotification(Context context) {
@@ -58,4 +47,5 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .setContentIntent(pendingIntent)
                 .build();
     }
+
 }

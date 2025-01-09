@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "821986799444",
+    "firebase_url": "https://tpnote-dd45e-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "tpnote-dd45e",
+    "storage_bucket": "tpnote-dd45e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821986799444:android:8045a81751ae1fdcf122c1",
+        "android_client_info": {
+          "package_name": "com.example.tpnote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO1PjkublQ7DEBmvu7LkXjtUNRO3RjkXM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
