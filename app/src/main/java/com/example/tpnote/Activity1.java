@@ -65,15 +65,23 @@ public class Activity1 extends AppCompatActivity {
         boutonAjouter.setOnClickListener(view -> afficherDialogueAjout(userId));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Recharger les tâches à chaque retour dans l'activité
+        String userId = "06 12 34 56 79"; // Exemple de userId
+        chargerTachesExistantes(userId);
+    }
+
+
     private void chargerTachesExistantes(String userId) {
         taskFetcher.setTaskDataListener(new FirebaseTaskFetcher.TaskDataListener() {
             @Override
             public void onTaskDataFetched(int taskId, String title, String dateTime, String description, boolean completed, String userIdFromDB) {
-                Log.d(TAG, "Tâche récupérée : ID = " + taskId + ", Titre = " + title + ", Date = " + dateTime + ", Description = " + description);
+                Log.d(TAG, "Tâche récupérée : " + title + " à " + dateTime);
 
-                // Ajout de la tâche dans l'interface
-                String heureExtraite = extraireHeureDepuisDate(dateTime);
-                ajouterNouvelleLigne(title, description, heureExtraite);
+                // Ajout complet de la date et de l'heure
+                ajouterNouvelleLigne(title, description, dateTime);
             }
 
             @Override
@@ -82,6 +90,7 @@ public class Activity1 extends AppCompatActivity {
             }
         });
 
+        // Appelle la récupération des tâches
         taskFetcher.fetchTasksByUserID(userId);
     }
 
@@ -248,8 +257,8 @@ public class Activity1 extends AppCompatActivity {
         return (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
     }
 
-    private void ajouterNouvelleLigne(String titre, String description, String heure) {
-        Log.d(TAG, "Ajout d'une ligne : Titre = " + titre + ", Description = " + description + ", Heure = " + heure);
+    private void ajouterNouvelleLigne(String titre, String description, String dateTime) {
+        Log.d(TAG, "Ajout d'une ligne : Titre = " + titre + ", Description = " + description + ", Date/Heure = " + dateTime);
 
         LinearLayout nouvelleLigne = new LinearLayout(this);
         nouvelleLigne.setOrientation(LinearLayout.HORIZONTAL);
@@ -286,31 +295,27 @@ public class Activity1 extends AppCompatActivity {
         verticalContainer.addView(textViewTitre);
         verticalContainer.addView(textViewDescription);
 
-        TextView textViewHeure = new TextView(this);
-        textViewHeure.setText(heure);
-        textViewHeure.setTextSize(16f);
-        textViewHeure.setTypeface(null, android.graphics.Typeface.ITALIC);
-        textViewHeure.setPadding(16, 0, 0, 0);
+        TextView textViewDateHeure = new TextView(this);
+        textViewDateHeure.setText(dateTime); // Affiche date et heure complètes
+        textViewDateHeure.setTextSize(16f);
+        textViewDateHeure.setTypeface(null, android.graphics.Typeface.ITALIC);
+        textViewDateHeure.setPadding(16, 0, 0, 0);
 
         nouvelleLigne.addView(verticalContainer);
-        nouvelleLigne.addView(textViewHeure);
+        nouvelleLigne.addView(textViewDateHeure);
         linearLayoutList.addView(nouvelleLigne);
 
         linearLayoutList.invalidate(); // Forcer l'affichage
         Log.d(TAG, "Nouvelle ligne ajoutée avec succès !");
     }
 
-    private String extraireHeureDepuisDate(String dateTime) {
-        if (dateTime == null || !dateTime.contains("T")) {
+    private String extraireDateEtHeureDepuisDate(String dateTime) {
+        if (dateTime == null || !dateTime.contains(" ")) {
             return "";
         }
-        String[] parts = dateTime.split("T");
-        if (parts.length >= 2) {
-            String[] timeParts = parts[1].split(":");
-            if (timeParts.length >= 2) {
-                return timeParts[0] + ":" + timeParts[1];
-            }
-        }
-        return "";
+        return dateTime; // Retourne directement la chaîne entière, par ex. "09/01/2025 13:55"
     }
+
+
+
 }
