@@ -21,7 +21,7 @@ public class Menu extends AppCompatActivity {
 
         // Initialisation des boutons
         button1 = findViewById(R.id.button1);
-        button2 = findViewById(R.id.button2);
+        button2 = findViewById(R.id.button4);
         button3 = findViewById(R.id.button3);
         button4 = findViewById(R.id.button4);
 
