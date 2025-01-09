@@ -112,6 +112,24 @@ public class TaskRepository {
             }
         });
     }
+    public void deleteTask(int taskId, OnTaskDeletedListener listener) {
+        DatabaseReference taskRef = mDatabase.child("tasks").child(String.valueOf(taskId));
 
-    // ... (autres méthodes si besoin)
+        taskRef.removeValue().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (listener != null) {
+                    listener.onTaskDeleted(true, "Tâche supprimée avec succès");
+                }
+            } else {
+                if (listener != null) {
+                    listener.onTaskDeleted(false, "Erreur lors de la suppression de la tâche");
+                }
+            }
+        });
+    }
+
+    public interface OnTaskDeletedListener {
+        void onTaskDeleted(boolean success, String message);
+    }
+
 }

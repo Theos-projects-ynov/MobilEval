@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -65,23 +66,20 @@ public class Activity1 extends AppCompatActivity {
         boutonAjouter.setOnClickListener(view -> afficherDialogueAjout(userId));
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Recharger les tâches à chaque retour dans l'activité
-        String userId = "06 12 34 56 79"; // Exemple de userId
-        chargerTachesExistantes(userId);
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        // Recharger les tâches à chaque retour dans l'activité
+//        String userId = "06 12 34 56 79"; // Exemple de userId
+//        chargerTachesExistantes(userId);
+//    }
 
 
     private void chargerTachesExistantes(String userId) {
         taskFetcher.setTaskDataListener(new FirebaseTaskFetcher.TaskDataListener() {
             @Override
             public void onTaskDataFetched(int taskId, String title, String dateTime, String description, boolean completed, String userIdFromDB) {
-                Log.d(TAG, "Tâche récupérée : " + title + " à " + dateTime);
-
-                // Ajout complet de la date et de l'heure
-                ajouterNouvelleLigne(title, description, dateTime);
+                ajouterNouvelleLigne(title, description, dateTime, taskId); // Ajoute taskId ici
             }
 
             @Override
@@ -90,7 +88,6 @@ public class Activity1 extends AppCompatActivity {
             }
         });
 
-        // Appelle la récupération des tâches
         taskFetcher.fetchTasksByUserID(userId);
     }
 
@@ -163,11 +160,11 @@ public class Activity1 extends AppCompatActivity {
                 return;
             }
 
-            // Ajoute la tâche dans l'interface
-            ajouterNouvelleLigne(titre, description, dateTime);
+            // Ajoute visuellement la tâche
+            int generatedTaskId = generateUniqueNotificationId(); // Simule un taskId unique
+            ajouterNouvelleLigne(titre, description, dateTime, generatedTaskId);
 
             // Enregistre la tâche dans Firebase
-
             repository.createTask(
                     userId,
                     titre,
@@ -177,43 +174,6 @@ public class Activity1 extends AppCompatActivity {
                     (success, message, taskId) -> {
                         if (success) {
                             Log.d(TAG, "Tâche créée dans Firebase : " + message);
-
-                            // Planifie la notification
-                            Calendar calendar2 = Calendar.getInstance();
-                            // Extrait les informations de date et d'heure
-                            String[] dateTimeParts = dateTime.split(" ");
-                            if (dateTimeParts.length == 2) {
-                                String[] dateParts = dateTimeParts[0].split("/");
-                                String[] timeParts = dateTimeParts[1].split(":");
-
-                                if (dateParts.length == 3 && timeParts.length == 2) {
-                                    int year = Integer.parseInt(dateParts[2]);
-                                    int month = Integer.parseInt(dateParts[1]) - 1; // Les mois commencent à 0
-                                    int day = Integer.parseInt(dateParts[0]);
-                                    int hour = Integer.parseInt(timeParts[0]);
-                                    int minute = Integer.parseInt(timeParts[1]);
-
-                                    calendar2.set(Calendar.YEAR, year);
-                                    calendar2.set(Calendar.MONTH, month);
-                                    calendar2.set(Calendar.DAY_OF_MONTH, day);
-                                    calendar2.set(Calendar.HOUR_OF_DAY, hour);
-                                    calendar2.set(Calendar.MINUTE, minute);
-                                    calendar2.set(Calendar.SECOND, 0);
-
-                                    // Planifie la notification si la date/heure est valide
-                                    if (calendar2.getTimeInMillis() > System.currentTimeMillis()) {
-                                        AlarmManagerHelper.planifierNotification(
-                                                Activity1.this,
-                                                titre,
-                                                description,
-                                                generateUniqueNotificationId(),
-                                                calendar2
-                                        );
-                                    } else {
-                                        Log.e(TAG, "La date/heure sélectionnée est dans le passé.");
-                                    }
-                                }
-                            }
                         } else {
                             Log.e(TAG, "Erreur lors de la création de la tâche : " + message);
                         }
@@ -257,9 +217,7 @@ public class Activity1 extends AppCompatActivity {
         return (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
     }
 
-    private void ajouterNouvelleLigne(String titre, String description, String dateTime) {
-        Log.d(TAG, "Ajout d'une ligne : Titre = " + titre + ", Description = " + description + ", Date/Heure = " + dateTime);
-
+    private void ajouterNouvelleLigne(String titre, String description, String dateTime, int taskId) {
         LinearLayout nouvelleLigne = new LinearLayout(this);
         nouvelleLigne.setOrientation(LinearLayout.HORIZONTAL);
 
@@ -267,16 +225,15 @@ public class Activity1 extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.setMargins(0, 10, 0, 10); // Marges autour de la ligne
+        params.setMargins(0, 10, 0, 10);
         nouvelleLigne.setLayoutParams(params);
 
         LinearLayout verticalContainer = new LinearLayout(this);
         verticalContainer.setOrientation(LinearLayout.VERTICAL);
-
         LinearLayout.LayoutParams verticalParams = new LinearLayout.LayoutParams(
-                0, // Largeur 0dp pour utiliser layout_weight
+                0,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
-                1.0f // Utilisation de layout_weight pour occuper l'espace restant
+                1.0f
         );
         verticalContainer.setLayoutParams(verticalParams);
         verticalContainer.setPadding(8, 8, 8, 8);
@@ -295,18 +252,45 @@ public class Activity1 extends AppCompatActivity {
         verticalContainer.addView(textViewTitre);
         verticalContainer.addView(textViewDescription);
 
-        TextView textViewDateHeure = new TextView(this);
-        textViewDateHeure.setText(dateTime); // Affiche date et heure complètes
-        textViewDateHeure.setTextSize(16f);
-        textViewDateHeure.setTypeface(null, android.graphics.Typeface.ITALIC);
-        textViewDateHeure.setPadding(16, 0, 0, 0);
+        TextView textViewDateTime = new TextView(this);
+        textViewDateTime.setText(dateTime);
+        textViewDateTime.setTextSize(16f);
+        textViewDateTime.setTypeface(null, android.graphics.Typeface.ITALIC);
+        textViewDateTime.setPadding(16, 0, 0, 0);
+
+        // Bouton pour supprimer la tâche
+        Button buttonDelete = new Button(this);
+        buttonDelete.setText("✖");
+        buttonDelete.setTextSize(18f);
+        buttonDelete.setPadding(8, 8, 8, 8);
+
+        buttonDelete.setOnClickListener(view -> {
+            // Supprimer la tâche dans Firebase
+            repository.deleteTask(taskId, (success, message) -> {
+                if (success) {
+                    linearLayoutList.removeView(nouvelleLigne);
+                    Toast.makeText(this, "Tâche supprimée : " + titre, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Erreur : " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
 
         nouvelleLigne.addView(verticalContainer);
-        nouvelleLigne.addView(textViewDateHeure);
+        nouvelleLigne.addView(textViewDateTime);
+        nouvelleLigne.addView(buttonDelete);
         linearLayoutList.addView(nouvelleLigne);
+    }
 
-        linearLayoutList.invalidate(); // Forcer l'affichage
-        Log.d(TAG, "Nouvelle ligne ajoutée avec succès !");
+    private void supprimerTacheEnBase(String titre, String description, String heure) {
+        // Logique pour supprimer la tâche de la base Firebase
+        /*repository.deleteTask(titre, description, heure, (success, message) -> {
+            if (success) {
+                Log.d(TAG, "Tâche supprimée de la base de données : " + message);
+            } else {
+                Log.e(TAG, "Erreur lors de la suppression de la tâche : " + message);
+            }
+        });*/
     }
 
     private String extraireDateEtHeureDepuisDate(String dateTime) {
@@ -315,7 +299,6 @@ public class Activity1 extends AppCompatActivity {
         }
         return dateTime; // Retourne directement la chaîne entière, par ex. "09/01/2025 13:55"
     }
-
 
 
 }
