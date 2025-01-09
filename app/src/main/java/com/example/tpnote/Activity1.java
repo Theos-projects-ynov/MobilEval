@@ -251,6 +251,7 @@ public class Activity1 extends AppCompatActivity {
     private void ajouterNouvelleLigne(String titre, String description, String heure) {
         Log.d(TAG, "Ajout d'une ligne : Titre = " + titre + ", Description = " + description + ", Heure = " + heure);
 
+        // Crée une nouvelle ligne horizontale
         LinearLayout nouvelleLigne = new LinearLayout(this);
         nouvelleLigne.setOrientation(LinearLayout.HORIZONTAL);
 
@@ -261,6 +262,7 @@ public class Activity1 extends AppCompatActivity {
         params.setMargins(0, 10, 0, 10); // Marges autour de la ligne
         nouvelleLigne.setLayoutParams(params);
 
+        // Conteneur vertical pour le titre et la description
         LinearLayout verticalContainer = new LinearLayout(this);
         verticalContainer.setOrientation(LinearLayout.VERTICAL);
 
@@ -272,12 +274,14 @@ public class Activity1 extends AppCompatActivity {
         verticalContainer.setLayoutParams(verticalParams);
         verticalContainer.setPadding(8, 8, 8, 8);
 
+        // Texte pour le titre
         TextView textViewTitre = new TextView(this);
         textViewTitre.setText(titre);
         textViewTitre.setTextSize(18f);
         textViewTitre.setTypeface(null, android.graphics.Typeface.BOLD);
         textViewTitre.setPadding(0, 0, 0, 4);
 
+        // Texte pour la description
         TextView textViewDescription = new TextView(this);
         textViewDescription.setText(description);
         textViewDescription.setTextSize(16f);
@@ -286,19 +290,53 @@ public class Activity1 extends AppCompatActivity {
         verticalContainer.addView(textViewTitre);
         verticalContainer.addView(textViewDescription);
 
+        // Texte pour l'heure
         TextView textViewHeure = new TextView(this);
         textViewHeure.setText(heure);
         textViewHeure.setTextSize(16f);
         textViewHeure.setTypeface(null, android.graphics.Typeface.ITALIC);
         textViewHeure.setPadding(16, 0, 0, 0);
 
+        // Bouton pour supprimer l'élément
+        Button buttonDelete = new Button(this);
+        buttonDelete.setText("✖");
+        buttonDelete.setTextSize(18f);
+        buttonDelete.setPadding(8, 8, 8, 8);
+        buttonDelete.setOnClickListener(view -> {
+            // Appeler la méthode de suppression en base
+            supprimerTacheEnBase(titre, description, heure);
+
+            // Supprimer visuellement la ligne après suppression réussie en base
+            linearLayoutList.removeView(nouvelleLigne);
+            Toast.makeText(this, "Tâche supprimée : " + titre, Toast.LENGTH_SHORT).show();
+        });
+
+        // Ajouter les vues à la ligne
         nouvelleLigne.addView(verticalContainer);
         nouvelleLigne.addView(textViewHeure);
+        nouvelleLigne.addView(buttonDelete);
+
+        // Ajouter la ligne au LinearLayout principal
         linearLayoutList.addView(nouvelleLigne);
 
-        linearLayoutList.invalidate(); // Forcer l'affichage
+        // Rafraîchir l'affichage
+        linearLayoutList.invalidate();
         Log.d(TAG, "Nouvelle ligne ajoutée avec succès !");
     }
+
+    private void supprimerTacheEnBase(String titre, String description, String heure) {
+        // Logique pour supprimer la tâche de la base Firebase
+        /*repository.deleteTask(titre, description, heure, (success, message) -> {
+            if (success) {
+                Log.d(TAG, "Tâche supprimée de la base de données : " + message);
+            } else {
+                Log.e(TAG, "Erreur lors de la suppression de la tâche : " + message);
+            }
+        });*/
+    }
+
+
+
 
     private String extraireHeureDepuisDate(String dateTime) {
         if (dateTime == null || !dateTime.contains("T")) {
