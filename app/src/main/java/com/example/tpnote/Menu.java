@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,16 +15,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
 import android.Manifest;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
 
 public class Menu extends AppCompatActivity {
 
@@ -57,7 +47,7 @@ public class Menu extends AppCompatActivity {
         setContentView(R.layout.menu);
 
         button1 = findViewById(R.id.button1);
-        button2 = findViewById(R.id.button4);
+        button2 = findViewById(R.id.button2);
         button3 = findViewById(R.id.button3);
         button4 = findViewById(R.id.button4);
 
