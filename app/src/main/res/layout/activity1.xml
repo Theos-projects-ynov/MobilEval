@@ -7,8 +7,10 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:context=".Activity1">
 
+        <!-- Barre d'outils en haut -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -20,15 +22,15 @@
             app:title="Reminders"
             app:titleTextColor="@android:color/white" />
 
+        <!-- Liste défilante pour les tâches -->
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="103dp"
-            android:layout_weight="1"
             android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/toolbar">
+            app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
             <LinearLayout
                 android:id="@+id/linear_layout_list"
@@ -36,11 +38,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Élément ajoutés ici -->
+                <!-- Les tâches seront ajoutées dynamiquement ici -->
 
             </LinearLayout>
         </ScrollView>
 
+        <!-- Bouton d'ajout de tâches -->
         <Button
             android:id="@+id/mon_bouton"
             android:layout_width="65dp"
@@ -49,11 +52,10 @@
             android:background="@drawable/rounded_button"
             android:text="+"
             android:textColor="#FFFFFF"
-            android:textSize="30dp"
+            android:textSize="30sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 </FrameLayout>

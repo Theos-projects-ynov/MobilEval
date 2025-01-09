@@ -1,0 +1,15 @@
+Faire un rappel
+repository.createTask(
+    "06 12 34 56 79",
+    "Nom de la nouvelle tâche",
+    "2 - Description optionnelle",
+    "2024-12-05T15:30:00",
+    false,
+    (success, message) -> {
+        if (success) {
+            Log.v(TAG, "SUCCESS FIREBASE");
+        } else {
+            Log.v(TAG, "ERRROR FIREBASE");
+        }
+    }
+);
