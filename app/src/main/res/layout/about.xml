@@ -130,4 +130,5 @@
             app:srcCompat="@drawable/nr_head" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </ScrollView>

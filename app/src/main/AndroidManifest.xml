@@ -32,18 +32,18 @@
         </activity>
 
         <!-- Activité 1 -->
-        <activity android:name=".Activity1"
+        <activity android:name=".Reminders"
             android:theme="@style/Theme.TPNote">
         </activity>
 
         <!-- Activité 2 -->
-        <activity android:name=".Activity2" />
+        <activity android:name=".Import" />
 
         <!-- Activité 3 -->
-        <activity android:name=".Activity3" />
+        <activity android:name=".Faq" />
 
         <!-- Activité Settings -->
-        <activity android:name=".Settings" />
+        <activity android:name=".About" />
 
         <receiver
             android:name=".NotificationReceiver"

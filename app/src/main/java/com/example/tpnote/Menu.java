@@ -2,20 +2,16 @@ package com.example.tpnote;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.FirebaseApp;
 
@@ -61,22 +57,22 @@ public class Menu extends AppCompatActivity {
         Log.i(TAG, "Ceci est un log informatif");
 
         button1.setOnClickListener(view -> {
-            Intent intent = new Intent(Menu.this, Activity1.class);
+            Intent intent = new Intent(Menu.this, Reminders.class);
             startActivity(intent);
         });
 
         button2.setOnClickListener(view -> {
-            Intent intent = new Intent(Menu.this, Activity2.class);
+            Intent intent = new Intent(Menu.this, Import.class);
             startActivity(intent);
         });
 
         button3.setOnClickListener(view -> {
-            Intent intent = new Intent(Menu.this, Activity3.class);
+            Intent intent = new Intent(Menu.this, Faq.class);
             startActivity(intent);
         });
 
         button4.setOnClickListener(view -> {
-            Intent intent = new Intent(Menu.this, Settings.class);
+            Intent intent = new Intent(Menu.this, About.class);
             startActivity(intent);
         });
     }

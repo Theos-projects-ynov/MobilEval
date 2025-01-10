@@ -1,36 +1,34 @@
 package com.example.tpnote;
 
 import android.app.DatePickerDialog;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import com.example.tpnote.model.Task;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class Activity1 extends AppCompatActivity {
+import android.graphics.Color;
+import android.util.AttributeSet;
+
+public class Reminders extends AppCompatActivity {
     private LinearLayout linearLayoutList;
     private TaskRepository repository = new TaskRepository();
     private FirebaseTaskFetcher taskFetcher = new FirebaseTaskFetcher();
@@ -75,7 +73,7 @@ public class Activity1 extends AppCompatActivity {
 
             @Override
             public void onTaskDataFetchFailed(String errorMessage) {
-                Toast.makeText(Activity1.this, "Erreur : " + errorMessage, Toast.LENGTH_SHORT).show();
+                Toast.makeText(Reminders.this, "Erreur : " + errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -172,7 +170,7 @@ public class Activity1 extends AppCompatActivity {
                             try {
                                 calendar2.setTime(sdf.parse(dateTime));
                                 AlarmManagerHelper.planifierNotification(
-                                        Activity1.this,
+                                        Reminders.this,
                                         titre,
                                         description,
                                         taskId,
@@ -239,11 +237,11 @@ public class Activity1 extends AppCompatActivity {
         textViewDateTime.setPadding(16, 0, 0, 0);
 
         // Bouton pour supprimer la tâche
-        Button buttonDelete = new Button(this);
-        buttonDelete.setText("✖");
-        buttonDelete.setTextSize(18f);
-        buttonDelete.setPadding(8, 8, 8, 8);
+        CustomDeleteButton buttonDelete = new CustomDeleteButton(this);
+        LinearLayout.LayoutParams deleteButtonParams = new LinearLayout.LayoutParams(100, 100); // Ajustez cette taille selon vos besoins
+        buttonDelete.setLayoutParams(deleteButtonParams);
 
+        // Ajout d'un listener pour supprimer la tâche
         buttonDelete.setOnClickListener(view -> {
             // Supprimer la tâche dans Firebase
             repository.deleteTask(taskId, (success, message) -> {
@@ -259,6 +257,67 @@ public class Activity1 extends AppCompatActivity {
         nouvelleLigne.addView(verticalContainer);
         nouvelleLigne.addView(textViewDateTime);
         nouvelleLigne.addView(buttonDelete);
+
+        // Ajout de la ligne à la liste
         linearLayoutList.addView(nouvelleLigne);
+        // Rafraîchissement de la mise en page
+        linearLayoutList.requestLayout();
+    }
+
+
+    public static class CustomDeleteButton extends View {
+        private Paint paint;
+
+        public CustomDeleteButton(Context context) {
+            super(context);
+            init();
+        }
+
+        public CustomDeleteButton(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            init();
+        }
+
+        public CustomDeleteButton(Context context, AttributeSet attrs, int defStyleAttr) {
+            super(context, attrs, defStyleAttr);
+            init();
+        }
+
+        private void init() {
+            paint = new Paint();
+            paint.setColor(Color.RED); // Choisir la couleur de la croix
+            paint.setStrokeWidth(10); // Largeur de la croix
+            paint.setAntiAlias(true); // Lissage des bords
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+            // Assurez-vous que la vue a des dimensions valides (largeur et hauteur)
+            super.onLayout(changed, left, top, right, bottom);
+            int width = getWidth();
+            int height = getHeight();
+
+            // Assurez-vous que la vue a des dimensions minimales
+            if (width == 0 || height == 0) {
+                setLayoutParams(new LinearLayout.LayoutParams(100, 100)); // Dimensions minimales par défaut
+            }
+        }
+
+        @Override
+        protected void onDraw(@NonNull Canvas canvas) {
+            super.onDraw(canvas);
+
+            // Récupérer les dimensions de la vue
+            int width = getWidth();
+            int height = getHeight();
+
+            // Ajuster la taille de la croix pour qu'elle soit centrée
+            float padding = 10;  // Ajouter un petit espace autour de la croix
+            float crossSize = Math.min(width, height) - padding;  // Utiliser la plus petite dimension pour la taille de la croix
+
+            // Dessiner la croix (2 lignes)
+            canvas.drawLine(padding, padding, width - padding, height - padding, paint); // Diagonale de gauche à droite
+            canvas.drawLine(width - padding, padding, padding, height - padding, paint); // Diagonale de droite à gauche
+        }
     }
 }
