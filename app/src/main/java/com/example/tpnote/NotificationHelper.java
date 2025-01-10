@@ -8,13 +8,8 @@ import android.graphics.Color;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Intent;
 
-import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 
 public class NotificationHelper {
@@ -32,7 +27,7 @@ public class NotificationHelper {
     }
 
     public void scheduleNotification(String title, String message, int notificationId, long triggerTimeMillis) {
-        Intent intent = new Intent(mContext, Activity1.class); // Peut être remplacé par un BroadcastReceiver si nécessaire
+        Intent intent = new Intent(mContext, Reminders.class); // Peut être remplacé par un BroadcastReceiver si nécessaire
         intent.putExtra("title", title);
         intent.putExtra("message", message);
 

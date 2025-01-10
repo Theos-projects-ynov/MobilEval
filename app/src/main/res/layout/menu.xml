@@ -25,7 +25,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/button4"
+            android:id="@+id/button2"
             style="@style/RoundedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,11 +43,11 @@
             android:layout_marginTop="40dp"
             android:text="FAQ"
             android:textColor="@color/white"
-            app:layout_constraintTop_toBottomOf="@+id/button4"
+            app:layout_constraintTop_toBottomOf="@+id/button2"
             tools:layout_editor_absoluteX="0dp" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/button4"
             style="@style/RoundedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
