@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,10 +25,12 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.tpnote.model.Task;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class Activity1 extends AppCompatActivity {
-
     private LinearLayout linearLayoutList;
     private TaskRepository repository = new TaskRepository();
     private FirebaseTaskFetcher taskFetcher = new FirebaseTaskFetcher();
@@ -57,7 +60,10 @@ public class Activity1 extends AppCompatActivity {
         Button boutonAjouter = findViewById(R.id.mon_bouton);
 
         // Identifiant utilisateur fictif
-        String userId = "06 12 34 56 79";
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        String userId = prefs.getString("userId", null);
+        Log.d("PREFS_TEST", "UserId actuel : " + (userId != null ? userId : "Aucun ID trouvé"));
+        ;
 
         // Charger les tâches existantes pour l'utilisateur
         chargerTachesExistantes(userId);
@@ -65,15 +71,6 @@ public class Activity1 extends AppCompatActivity {
         // Gestion du clic pour ajouter une tâche
         boutonAjouter.setOnClickListener(view -> afficherDialogueAjout(userId));
     }
-
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        // Recharger les tâches à chaque retour dans l'activité
-//        String userId = "06 12 34 56 79"; // Exemple de userId
-//        chargerTachesExistantes(userId);
-//    }
-
 
     private void chargerTachesExistantes(String userId) {
         taskFetcher.setTaskDataListener(new FirebaseTaskFetcher.TaskDataListener() {
@@ -160,11 +157,11 @@ public class Activity1 extends AppCompatActivity {
                 return;
             }
 
-            // Ajoute visuellement la tâche
-            int generatedTaskId = generateUniqueNotificationId(); // Simule un taskId unique
+            // Ajout visuel de la tâche
+            int generatedTaskId = generateUniqueNotificationId();
             ajouterNouvelleLigne(titre, description, dateTime, generatedTaskId);
 
-            // Enregistre la tâche dans Firebase
+            // Enregistrement Firebase
             repository.createTask(
                     userId,
                     titre,
@@ -174,6 +171,22 @@ public class Activity1 extends AppCompatActivity {
                     (success, message, taskId) -> {
                         if (success) {
                             Log.d(TAG, "Tâche créée dans Firebase : " + message);
+
+                            // Planification de la notification
+                            Calendar calendar2 = Calendar.getInstance();
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                            try {
+                                calendar2.setTime(sdf.parse(dateTime));
+                                AlarmManagerHelper.planifierNotification(
+                                        Activity1.this,
+                                        titre,
+                                        description,
+                                        taskId,
+                                        calendar2
+                                );
+                            } catch (ParseException e) {
+                                Log.e(TAG, "Erreur lors de la conversion de la date/heure : " + e.getMessage());
+                            }
                         } else {
                             Log.e(TAG, "Erreur lors de la création de la tâche : " + message);
                         }
@@ -183,34 +196,7 @@ public class Activity1 extends AppCompatActivity {
             dialog.dismiss();
         });
 
-
         dialog.show();
-    }
-
-    private void planifierNotification(Context context, String title, String message, int notificationId, Calendar dateHeure) {
-        long triggerTimeMillis = dateHeure.getTimeInMillis();
-
-        Intent intent = new Intent(context, NotificationReceiver.class);
-        intent.putExtra("title", title);
-        intent.putExtra("message", message);
-        intent.putExtra("notificationId", notificationId);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                notificationId,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTimeMillis,
-                    pendingIntent
-            );
-        }
-        Log.d(TAG, "Notification planifiée pour : " + dateHeure.getTime());
     }
 
     private int generateUniqueNotificationId() {
@@ -281,24 +267,4 @@ public class Activity1 extends AppCompatActivity {
         nouvelleLigne.addView(buttonDelete);
         linearLayoutList.addView(nouvelleLigne);
     }
-
-    private void supprimerTacheEnBase(String titre, String description, String heure) {
-        // Logique pour supprimer la tâche de la base Firebase
-        /*repository.deleteTask(titre, description, heure, (success, message) -> {
-            if (success) {
-                Log.d(TAG, "Tâche supprimée de la base de données : " + message);
-            } else {
-                Log.e(TAG, "Erreur lors de la suppression de la tâche : " + message);
-            }
-        });*/
-    }
-
-    private String extraireDateEtHeureDepuisDate(String dateTime) {
-        if (dateTime == null || !dateTime.contains(" ")) {
-            return "";
-        }
-        return dateTime; // Retourne directement la chaîne entière, par ex. "09/01/2025 13:55"
-    }
-
-
 }
