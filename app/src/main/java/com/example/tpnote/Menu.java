@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,8 @@ public class Menu extends AppCompatActivity {
     private static final String TAG = Menu.class.getSimpleName();
     private static final String PREFS_NAME = "prefs";
     private static final String PREF_USER_ID = "userId";
+    private static final int EXIT_DELAY = 2000; // Délai avant réinitialisation (en millisecondes)
+    private boolean backPressedOnce = false;
 
     private NotificationHelper notificationHelper;
     private Button button1, button2, button3, button4;
@@ -30,6 +33,11 @@ public class Menu extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+
+        afficherPopupAutorisationNotifs();
+        notificationHelper = new NotificationHelper(this);
+
         super.onCreate(savedInstanceState);
 
         requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
@@ -110,10 +118,11 @@ public class Menu extends AppCompatActivity {
     }
 
     private void afficherPopupAutorisationNotifs() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
         boolean autorisationDonnee = prefs.getBoolean("notificationsAutorisees", false);
 
         if (!autorisationDonnee) {
+            // Créez et affichez la boîte de dialogue
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Autorisation des Notifications");
             builder.setMessage("L'application souhaite vous envoyer des notifications pour vous rappeler vos tâches. Acceptez-vous ?");
@@ -131,5 +140,18 @@ public class Menu extends AppCompatActivity {
 
             builder.create().show();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (backPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.backPressedOnce = true;
+        Toast.makeText(this, "Appuyez de nouveau pour quitter", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(() -> backPressedOnce = false, EXIT_DELAY);
     }
 }

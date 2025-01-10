@@ -50,12 +50,6 @@ public class Activity1 extends AppCompatActivity {
             Toast.makeText(this, titre + ": " + message, Toast.LENGTH_LONG).show();
         }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
         linearLayoutList = findViewById(R.id.linear_layout_list);
         Button boutonAjouter = findViewById(R.id.mon_bouton);
 
