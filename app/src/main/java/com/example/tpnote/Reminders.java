@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -30,7 +29,7 @@ import android.util.AttributeSet;
 
 public class Reminders extends AppCompatActivity {
     private LinearLayout linearLayoutList;
-    private TaskRepository repository = new TaskRepository();
+    private TaskManager repository;
     private FirebaseTaskFetcher taskFetcher = new FirebaseTaskFetcher();
 
     private static final String TAG = "Activity1";
@@ -39,36 +38,42 @@ public class Reminders extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity1);
+        initApp();
+    }
 
-        // Vérifie si une notification a ouvert l'activité
-        if (getIntent().hasExtra("title") && getIntent().hasExtra("message")) {
-            String titre = getIntent().getStringExtra("title");
-            String message = getIntent().getStringExtra("message");
-
-            Toast.makeText(this, titre + ": " + message, Toast.LENGTH_LONG).show();
+    private void initApp() {
+        repository = new TaskManager(this);
+        if (repository == null) {
+            Log.e(TAG, "Erreur lors de l'initialisation de TaskManager");
+            return;
         }
-
         linearLayoutList = findViewById(R.id.linear_layout_list);
         Button boutonAjouter = findViewById(R.id.mon_bouton);
 
-        // Identifiant utilisateur fictif
         SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
         String userId = prefs.getString("userId", null);
-        Log.d("PREFS_TEST", "UserId actuel : " + (userId != null ? userId : "Aucun ID trouvé"));
-        ;
-
-        // Charger les tâches existantes pour l'utilisateur
+        logUserId(userId);
         chargerTachesExistantes(userId);
 
-        // Gestion du clic pour ajouter une tâche
         boutonAjouter.setOnClickListener(view -> afficherDialogueAjout(userId));
     }
 
+    private void logUserId(String userId) {
+        Log.d("PREFS_TEST", "UserId actuel : " + (userId != null ? userId : "Aucun ID trouvé"));
+    }
+
     private void chargerTachesExistantes(String userId) {
+        if (taskFetcher == null) {
+            Log.e(TAG, "Erreur : taskFetcher n'est pas initialisé.");
+            return;
+        }
         taskFetcher.setTaskDataListener(new FirebaseTaskFetcher.TaskDataListener() {
             @Override
             public void onTaskDataFetched(int taskId, String title, String dateTime, String description, boolean completed, String userIdFromDB) {
-                ajouterNouvelleLigne(title, description, dateTime, taskId); // Ajoute taskId ici
+                if (title == null || title.isEmpty()) title = "Sans titre";
+                if (description == null || description.isEmpty()) description = "Pas de description";
+                if (dateTime == null || dateTime.isEmpty()) dateTime = "Date/Heure inconnue";
+                ajouterNouvelleLigne(title, description, dateTime, taskId);
             }
 
             @Override
@@ -81,6 +86,11 @@ public class Reminders extends AppCompatActivity {
     }
 
     private void afficherDialogueAjout(String userId) {
+        AlertDialog dialog = createAddTaskDialog(userId);
+        dialog.show();
+    }
+
+    private AlertDialog createAddTaskDialog(String userId) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Ajouter une Tâche");
 
@@ -93,102 +103,74 @@ public class Reminders extends AppCompatActivity {
         Button buttonSelectDateTime = dialogView.findViewById(R.id.button_select_time);
         Button buttonCreate = dialogView.findViewById(R.id.button_create);
 
-        final Calendar calendar = Calendar.getInstance(); // Stocke la date/heure sélectionnée
-
-        buttonSelectDateTime.setOnClickListener(view -> {
-            final Calendar now = Calendar.getInstance();
-            int annee = now.get(Calendar.YEAR);
-            int mois = now.get(Calendar.MONTH);
-            int jour = now.get(Calendar.DAY_OF_MONTH);
-
-            // Afficher le DatePickerDialog
-            new DatePickerDialog(this, (datePicker, year, month, dayOfMonth) -> {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-                int heure = now.get(Calendar.HOUR_OF_DAY);
-                int minute = now.get(Calendar.MINUTE);
-
-                // Afficher le TimePickerDialog
-                new TimePickerDialog(this, (timePicker, hourOfDay, minute1) -> {
-                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    calendar.set(Calendar.MINUTE, minute1);
-                    calendar.set(Calendar.SECOND, 0);
-
-                    // Met à jour l'affichage de la date/heure
-                    String dateTimeFormatee = String.format("%02d/%02d/%d %02d:%02d",
-                            dayOfMonth, month + 1, year, hourOfDay, minute1);
-                    textViewSelectedDateTime.setText(dateTimeFormatee);
-                    Log.d(TAG, "Date/Heure sélectionnée : " + dateTimeFormatee);
-
-                }, heure, minute, true).show();
-
-            }, annee, mois, jour).show();
-        });
+        final Calendar calendar = Calendar.getInstance();
+        setupDateTimeSelector(buttonSelectDateTime, textViewSelectedDateTime, calendar);
 
         final AlertDialog dialog = builder.create();
+        setupCreateTaskButton(buttonCreate, dialog, userId, editTextTitle, editTextDescription, textViewSelectedDateTime, calendar);
 
-        buttonCreate.setOnClickListener(view -> {
-            String titre = editTextTitle.getText().toString().trim();
-            String description = editTextDescription.getText().toString().trim();
-            String dateTime = textViewSelectedDateTime.getText().toString().trim();
+        return dialog;
+    }
 
-            if (titre.isEmpty()) {
-                editTextTitle.setError("Le titre est requis");
-                return;
-            }
-
-            if (description.isEmpty()) {
-                editTextDescription.setError("La description est requise");
-                return;
-            }
-
-            if (dateTime.isEmpty()) {
-                textViewSelectedDateTime.setError("La date et l'heure sont requises");
-                return;
-            }
-
-            // Ajout visuel de la tâche
-            int generatedTaskId = generateUniqueNotificationId();
-            ajouterNouvelleLigne(titre, description, dateTime, generatedTaskId);
-
-            // Enregistrement Firebase
-            repository.createTask(
-                    userId,
-                    titre,
-                    description,
-                    dateTime,
-                    false,
-                    (success, message, taskId) -> {
-                        if (success) {
-                            Log.d(TAG, "Tâche créée dans Firebase : " + message);
-
-                            // Planification de la notification
-                            Calendar calendar2 = Calendar.getInstance();
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-                            try {
-                                calendar2.setTime(sdf.parse(dateTime));
-                                AlarmManagerHelper.planifierNotification(
-                                        Reminders.this,
-                                        titre,
-                                        description,
-                                        taskId,
-                                        calendar2
-                                );
-                            } catch (ParseException e) {
-                                Log.e(TAG, "Erreur lors de la conversion de la date/heure : " + e.getMessage());
-                            }
-                        } else {
-                            Log.e(TAG, "Erreur lors de la création de la tâche : " + message);
-                        }
-                    }
-            );
-
-            dialog.dismiss();
+    private void setupDateTimeSelector(Button button, TextView textView, Calendar calendar) {
+        button.setOnClickListener(view -> {
+            Calendar now = Calendar.getInstance();
+            new DatePickerDialog(this, (datePicker, year, month, day) -> {
+                calendar.set(year, month, day);
+                selectTime(textView, calendar);
+            }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show();
         });
+    }
 
-        dialog.show();
+    private void selectTime(TextView textView, Calendar calendar) {
+        Calendar now = Calendar.getInstance();
+        new TimePickerDialog(this, (timePicker, hour, minute) -> {
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+            textView.setText(formatDateTime(calendar));
+        }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show();
+    }
+
+    private String formatDateTime(Calendar calendar) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        return sdf.format(calendar.getTime());
+    }
+
+    private void setupCreateTaskButton(Button button, AlertDialog dialog, String userId, EditText title, EditText description, TextView dateTimeView, Calendar calendar) {
+        button.setOnClickListener(view -> {
+            if (validateInputs(title, description, dateTimeView)) {
+                createTaskAndDismiss(dialog, userId, title.getText().toString(), description.getText().toString(), dateTimeView.getText().toString(), calendar);
+            }
+        });
+    }
+
+    private boolean validateInputs(EditText title, EditText description, TextView dateTimeView) {
+        if (title.getText().toString().trim().isEmpty()) {
+            title.setError("Le titre est requis");
+            return false;
+        }
+        if (description.getText().toString().trim().isEmpty()) {
+            description.setError("La description est requise");
+            return false;
+        }
+        if (dateTimeView.getText().toString().trim().isEmpty()) {
+            dateTimeView.setError("La date et l'heure sont requises");
+            return false;
+        }
+        return true;
+    }
+
+    private void createTaskAndDismiss(AlertDialog dialog, String userId, String title, String description, String dateTime, Calendar calendar) {
+        int taskId = generateUniqueNotificationId();
+        ajouterNouvelleLigne(title, description, dateTime, taskId);
+        repository.createTask(userId, title, description, dateTime, false, (success, message, id) -> {
+            if (success) {
+                planifierNotificationAvecLogs(title, description, calendar);
+            } else {
+                Log.e(TAG, "Erreur lors de la création : " + message);
+            }
+        });
+        dialog.dismiss();
     }
 
     private int generateUniqueNotificationId() {
@@ -196,74 +178,88 @@ public class Reminders extends AppCompatActivity {
     }
 
     private void ajouterNouvelleLigne(String titre, String description, String dateTime, int taskId) {
-        LinearLayout nouvelleLigne = new LinearLayout(this);
-        nouvelleLigne.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout nouvelleLigne = createTaskLayout(titre, description, dateTime, taskId);
 
+        if (linearLayoutList == null) {
+            Log.e(TAG, "Erreur : linearLayoutList n'est pas initialisé.");
+            return;
+        }
+
+        linearLayoutList.addView(nouvelleLigne);
+        linearLayoutList.requestLayout();
+    }
+
+    private LinearLayout createTaskLayout(String titre, String description, String dateTime,int taskId) {
+        LinearLayout taskLayout = new LinearLayout(this);
+        taskLayout.setOrientation(LinearLayout.HORIZONTAL);
+        taskLayout.setLayoutParams(createLayoutParams());
+
+        LinearLayout verticalContainer = createVerticalContainer(titre, description);
+        TextView textViewDateTime = createDateTimeTextView(dateTime);
+
+        taskLayout.addView(verticalContainer);
+        taskLayout.addView(textViewDateTime);
+
+        // Ajouter un bouton "X" pour s'assurer qu'il est toujours présent
+        CustomDeleteButton deleteButton = new CustomDeleteButton(this);
+        deleteButton.setTag("delete_button"); // Ajouter un tag pour éviter les doublons
+        deleteButton.setLayoutParams(new LinearLayout.LayoutParams(100, 100));
+        taskLayout.addView(deleteButton);
+
+        deleteButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Delete button clicked1");
+            repository.deleteTask(taskId, (success, message) -> {
+                if (success) {
+                    Log.d("DEBUG", "Task deleted successfully");
+                    linearLayoutList.removeView(taskLayout);
+                    linearLayoutList.invalidate(); // Force a refresh of the layout
+                    Toast.makeText(this, "Task deleted: " + titre, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Erreur : " + message, Toast.LENGTH_SHORT).show();
+                }
+            });        });
+
+        return taskLayout;
+    }
+
+    private LinearLayout.LayoutParams createLayoutParams() {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.setMargins(0, 10, 0, 10);
-        nouvelleLigne.setLayoutParams(params);
-
-        LinearLayout verticalContainer = new LinearLayout(this);
-        verticalContainer.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams verticalParams = new LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1.0f
-        );
-        verticalContainer.setLayoutParams(verticalParams);
-        verticalContainer.setPadding(8, 8, 8, 8);
-
-        TextView textViewTitre = new TextView(this);
-        textViewTitre.setText(titre);
-        textViewTitre.setTextSize(18f);
-        textViewTitre.setTypeface(null, android.graphics.Typeface.BOLD);
-        textViewTitre.setPadding(0, 0, 0, 4);
-
-        TextView textViewDescription = new TextView(this);
-        textViewDescription.setText(description);
-        textViewDescription.setTextSize(16f);
-        textViewDescription.setPadding(0, 0, 0, 4);
-
-        verticalContainer.addView(textViewTitre);
-        verticalContainer.addView(textViewDescription);
-
-        TextView textViewDateTime = new TextView(this);
-        textViewDateTime.setText(dateTime);
-        textViewDateTime.setTextSize(16f);
-        textViewDateTime.setTypeface(null, android.graphics.Typeface.ITALIC);
-        textViewDateTime.setPadding(16, 0, 0, 0);
-
-        // Bouton pour supprimer la tâche
-        CustomDeleteButton buttonDelete = new CustomDeleteButton(this);
-        LinearLayout.LayoutParams deleteButtonParams = new LinearLayout.LayoutParams(100, 100); // Ajustez cette taille selon vos besoins
-        buttonDelete.setLayoutParams(deleteButtonParams);
-
-        // Ajout d'un listener pour supprimer la tâche
-        buttonDelete.setOnClickListener(view -> {
-            // Supprimer la tâche dans Firebase
-            repository.deleteTask(taskId, (success, message) -> {
-                if (success) {
-                    linearLayoutList.removeView(nouvelleLigne);
-                    Toast.makeText(this, "Tâche supprimée : " + titre, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Erreur : " + message, Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
-
-        nouvelleLigne.addView(verticalContainer);
-        nouvelleLigne.addView(textViewDateTime);
-        nouvelleLigne.addView(buttonDelete);
-
-        // Ajout de la ligne à la liste
-        linearLayoutList.addView(nouvelleLigne);
-        // Rafraîchissement de la mise en page
-        linearLayoutList.requestLayout();
+        params.setMargins(0, 5, 0, 5);
+        return params;
     }
 
+    private LinearLayout createVerticalContainer(String titre, String description) {
+        LinearLayout verticalContainer = new LinearLayout(this);
+        verticalContainer.setOrientation(LinearLayout.VERTICAL);
+        verticalContainer.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+        verticalContainer.setPadding(8, 8, 8, 8);
+
+        verticalContainer.addView(createTextView(titre, 18f, true));
+        verticalContainer.addView(createTextView(description, 16f, false));
+
+        return verticalContainer;
+    }
+
+    private TextView createTextView(String text, float textSize, boolean bold) {
+        TextView textView = new TextView(this);
+        textView.setText(text);
+        textView.setTextSize(textSize);
+        textView.setPadding(0, 0, 0, 4);
+        if (bold) textView.setTypeface(null, android.graphics.Typeface.BOLD);
+        return textView;
+    }
+
+    private TextView createDateTimeTextView(String dateTime) {
+        TextView textView = new TextView(this);
+        textView.setText(dateTime);
+        textView.setTextSize(16f);
+        textView.setTypeface(null, android.graphics.Typeface.ITALIC);
+        textView.setPadding(16, 0, 0, 0);
+        return textView;
+    }
 
     public static class CustomDeleteButton extends View {
         private Paint paint;
@@ -285,21 +281,19 @@ public class Reminders extends AppCompatActivity {
 
         private void init() {
             paint = new Paint();
-            paint.setColor(Color.RED); // Choisir la couleur de la croix
-            paint.setStrokeWidth(10); // Largeur de la croix
-            paint.setAntiAlias(true); // Lissage des bords
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(10);
+            paint.setAntiAlias(true);
         }
 
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-            // Assurez-vous que la vue a des dimensions valides (largeur et hauteur)
             super.onLayout(changed, left, top, right, bottom);
             int width = getWidth();
             int height = getHeight();
 
-            // Assurez-vous que la vue a des dimensions minimales
             if (width == 0 || height == 0) {
-                setLayoutParams(new LinearLayout.LayoutParams(100, 100)); // Dimensions minimales par défaut
+                setLayoutParams(new LinearLayout.LayoutParams(100, 100));
             }
         }
 
@@ -307,17 +301,21 @@ public class Reminders extends AppCompatActivity {
         protected void onDraw(@NonNull Canvas canvas) {
             super.onDraw(canvas);
 
-            // Récupérer les dimensions de la vue
             int width = getWidth();
             int height = getHeight();
 
-            // Ajuster la taille de la croix pour qu'elle soit centrée
-            float padding = 10;  // Ajouter un petit espace autour de la croix
-            float crossSize = Math.min(width, height) - padding;  // Utiliser la plus petite dimension pour la taille de la croix
+            float padding = 10;
+            float crossSize = Math.min(width, height) - padding;
 
-            // Dessiner la croix (2 lignes)
-            canvas.drawLine(padding, padding, width - padding, height - padding, paint); // Diagonale de gauche à droite
-            canvas.drawLine(width - padding, padding, padding, height - padding, paint); // Diagonale de droite à gauche
+            canvas.drawLine(padding, padding, width - padding, height - padding, paint);
+            canvas.drawLine(width - padding, padding, padding, height - padding, paint);
         }
+    }
+
+    private void planifierNotificationAvecLogs(String titre, String description, Calendar dateHeure) {
+        int notificationId = generateUniqueNotificationId();
+        TaskManager.planifierNotification(this, titre, description, notificationId, dateHeure);
+
+        Log.d("Reminders", "Notification planifiée : " + titre + " à " + dateHeure.getTime().toString());
     }
 }

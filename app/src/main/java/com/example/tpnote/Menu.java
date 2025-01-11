@@ -23,29 +23,19 @@ public class Menu extends AppCompatActivity {
     private static final int EXIT_DELAY = 2000; // Délai avant réinitialisation (en millisecondes)
     private boolean backPressedOnce = false;
 
-    private NotificationHelper notificationHelper;
     private Button button1, button2, button3, button4;
-    private TaskRepository repository = new TaskRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
 
-        afficherPopupAutorisationNotifs();
-        notificationHelper = new NotificationHelper(this);
-
         super.onCreate(savedInstanceState);
-
-        requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
-
-        FirebaseApp.initializeApp(this);
-        setContentView(R.layout.menu);
-
-        notificationHelper = new NotificationHelper(this);
-        notificationHelper.sendSimpleNotification(1, "TEST 2", "Message de test");
 
         verifierNumeroUtilisateur();
         afficherPopupAutorisationNotifs();
+
+        FirebaseApp.initializeApp(this);
+        setContentView(R.layout.menu);
 
         button1 = findViewById(R.id.button1);
         button2 = findViewById(R.id.button2);
